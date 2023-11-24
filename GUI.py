@@ -18,7 +18,7 @@ class TaskApp(wx.Frame):
         self.panel = wx.Panel(self)
 
         # Set the icon
-        icon = wx.Icon("icon.ico", wx.BITMAP_TYPE_ICO)
+        #icon = wx.Icon("icon.ico", wx.BITMAP_TYPE_ICO)
         self.SetIcon(icon)
 
         # Left panel with scrolling capability
