@@ -12,34 +12,43 @@ class TaskApp(wx.Frame):
     def __init__(self, *args, **kw):
         super(TaskApp, self).__init__(*args, **kw)
 
-        self.starter_prompt = "I'm gonna give you a task, based on how difficult and rewarding it is, give me a number between 50 - 1000. If you can't answer it, say 0. Reply with only a number."
+        self.starter_prompt = "I'm gonna give you a task, based on how difficult and rewarding it is, give me a number between 50 - 1000. If you can't answer it, say 0. Reply with only a number. Don't say anything, just a number based on the text."
         self.total_points = 0
 
         self.panel = wx.Panel(self)
 
         # Set the icon
         #icon = wx.Icon("icon.ico", wx.BITMAP_TYPE_ICO)
-        self.SetIcon(icon)
+        #self.SetIcon(icon)
 
         # Left panel with scrolling capability
         self.left_panel = wx.ScrolledWindow(self.panel, style=wx.VSCROLL)
         self.left_panel.SetScrollRate(0, 20)
+        self.left_panel.SetBackgroundColour((0, 0, 0))
+
 
         # Task list
         self.task_list = wx.ListCtrl(self.left_panel, style=wx.LC_REPORT)
         self.task_list.InsertColumn(0, "Task", width=150)
         self.task_list.InsertColumn(1, "Points", width=80)
+        self.task_list.SetForegroundColour((255,255,255))
+        self.task_list.SetBackgroundColour((0, 0, 0))
+        self.task_list.SetTextColour((255,255,255))
 
         # Right panel with input fields and buttons
         self.right_panel = wx.Panel(self.panel)
 
         self.amount_of_tasks_label = wx.StaticText(self.right_panel, label="How many tasks do you have?")
         self.amount_of_tasks_entry = wx.TextCtrl(self.right_panel, style=wx.TE_PROCESS_ENTER)
+        self.amount_of_tasks_entry.SetForegroundColour((255,255,255))
+        self.amount_of_tasks_entry.SetBackgroundColour((0, 0, 0))
+        self.amount_of_tasks_label.SetForegroundColour((255,255,255))
 
         self.submit_button = wx.Button(self.right_panel, label="Submit")
         self.submit_button.Bind(wx.EVT_BUTTON, self.submit_task)
 
         self.total_points_label = wx.StaticText(self.right_panel, label="Total Points: 0")
+        self.total_points_label.SetForegroundColour((255,255,255))
 
         # Set up sizers for the right panel
         right_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -54,6 +63,9 @@ class TaskApp(wx.Frame):
         main_sizer = wx.BoxSizer(wx.HORIZONTAL)
         main_sizer.Add(self.left_panel, 1, wx.EXPAND)
         main_sizer.Add(self.right_panel, 1, wx.EXPAND)
+        
+        self.right_panel.SetBackgroundColour((0,0,0))
+        self.right_panel.SetForegroundColour((255,255,255))
 
         self.panel.SetSizer(main_sizer)
         self.Show()
@@ -63,6 +75,8 @@ class TaskApp(wx.Frame):
 
         while amount_of_tasks > 0:
             dialog = wx.TextEntryDialog(self, "Enter task", "Task", style=wx.OK | wx.CANCEL)
+            dialog.SetBackgroundColour((0, 0, 0))
+            dialog.SetForegroundColour((255, 255, 255))
 
 
             if dialog.ShowModal() == wx.ID_OK:
