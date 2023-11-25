@@ -12,7 +12,7 @@ class TaskApp(wx.Frame):
     def __init__(self, *args, **kw):
         super(TaskApp, self).__init__(*args, **kw)
 
-        self.starter_prompt = "I'm gonna give you a task, based on how difficult and rewarding it is, give me a number between 50 - 1000. If you can't answer it, say 0. Reply with only a number. Don't say anything, just a number based on the text."
+        self.starter_prompt = "Task: Provide a numerical response between 50 and 1000, reflecting the difficulty and reward level of the task. If unable to answer, respond with 0. Your reply should consist solely of the numerical value, without additional commentary or text."
         self.total_points = 0
 
         self.panel = wx.Panel(self)
@@ -38,11 +38,11 @@ class TaskApp(wx.Frame):
         # Right panel with input fields and buttons
         self.right_panel = wx.Panel(self.panel)
 
-        self.amount_of_tasks_label = wx.StaticText(self.right_panel, label="How many tasks do you have?")
-        self.amount_of_tasks_entry = wx.TextCtrl(self.right_panel, style=wx.TE_PROCESS_ENTER)
-        self.amount_of_tasks_entry.SetForegroundColour((255,255,255))
-        self.amount_of_tasks_entry.SetBackgroundColour((0, 0, 0))
-        self.amount_of_tasks_label.SetForegroundColour((255,255,255))
+        self.task_entry_label = wx.StaticText(self.right_panel, label="Task:")
+        self.task_entry = wx.TextCtrl(self.right_panel, style=wx.TE_PROCESS_ENTER)
+        self.task_entry.SetForegroundColour((255,255,255))
+        self.task_entry.SetBackgroundColour((0, 0, 0))
+        self.task_entry_label.SetForegroundColour((255,255,255))
 
         self.submit_button = wx.Button(self.right_panel, label="Submit")
         self.submit_button.Bind(wx.EVT_BUTTON, self.submit_task)
@@ -52,8 +52,8 @@ class TaskApp(wx.Frame):
 
         # Set up sizers for the right panel
         right_sizer = wx.BoxSizer(wx.VERTICAL)
-        right_sizer.Add(self.amount_of_tasks_label, 0, wx.ALL, 5)
-        right_sizer.Add(self.amount_of_tasks_entry, 0, wx.EXPAND | wx.ALL, 5)
+        right_sizer.Add(self.task_entry_label, 0, wx.ALL, 5)
+        right_sizer.Add(self.task_entry, 0, wx.EXPAND | wx.ALL, 5)
         right_sizer.Add(self.submit_button, 0, wx.ALL, 5)
         right_sizer.Add(self.total_points_label, 0, wx.ALL, 5)
 
@@ -71,37 +71,25 @@ class TaskApp(wx.Frame):
         self.Show()
 
     def submit_task(self, event):
-        amount_of_tasks = int(self.amount_of_tasks_entry.GetValue())
+        task = self.task_entry.GetValue()
 
-        while amount_of_tasks > 0:
-            dialog = wx.TextEntryDialog(self, "Enter task", "Task", style=wx.OK | wx.CANCEL)
-            dialog.SetBackgroundColour((0, 0, 0))
-            dialog.SetForegroundColour((255, 255, 255))
+        
+        prompt = self.starter_prompt + task
 
+        output = palm.generate_text(prompt=prompt).result
+        output = int(''.join(filter(str.isdigit, output)))
 
-            if dialog.ShowModal() == wx.ID_OK:
-                task = dialog.GetValue()
-                
+        try:
+            points = int(output)
+            self.total_points += points
 
-                dialog.Destroy()
-            prompt = self.starter_prompt + task
-
-            # Replace the next line with your API call
-            output = palm.generate_text(prompt=prompt).result
-            print(output)
-            output = int(''.join(filter(str.isdigit, output)))
-
-            try:
-                points = int(output)
-                self.total_points += points
-                amount_of_tasks -= 1
-
-                # Add task to the list
-                index = self.task_list.InsertItem(self.task_list.GetItemCount(), task)
-                self.task_list.SetItem(index, 1, str(points))
-            except ValueError:
-                wx.MessageBox("AI Error", "AI made an invalid input.", wx.OK | wx.ICON_ERROR)
-                break
+            # Add task to the list
+            index = self.task_list.InsertItem(self.task_list.GetItemCount(), task)
+            self.task_list.SetItem(index, 1, str(points))
+            self.task_entry.SetValue("")
+        except ValueError:
+            wx.MessageBox("AI Error", "AI made an invalid input.", wx.OK | wx.ICON_ERROR)
+            
 
         self.total_points_label.SetLabel(f"Total Points: {self.total_points}")
 
