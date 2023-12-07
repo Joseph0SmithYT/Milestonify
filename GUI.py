@@ -10,16 +10,16 @@ API_KEY = os.getenv("API_KEY")
 palm.configure(api_key=API_KEY)
 total_points = 0
 
+curses = ["test", "task"]
+
+lTaskList = {}
+
 class TaskApp(wx.Frame):
     def __init__(self, *args, **kw):
         
         super(TaskApp, self).__init__(*args, **kw)
-        os.path.isfile('points.pkl')
-        self.total_points = 0
-        with open('points.pkl', 'rb') as f:
-            self.total_points = pickle.load(f)
-            print(self.total_points)
         
+        self.total_points = 0
         self.starter_prompt = "Task: Provide a numerical response between 50 and 1000, reflecting the difficulty and reward level of the task. If unable to answer, respond with 0. Your reply should consist solely of the numerical value, without additional commentary or text."
         
 
@@ -28,6 +28,8 @@ class TaskApp(wx.Frame):
         # Set the icon
         #icon = wx.Icon("icon.ico", wx.BITMAP_TYPE_ICO)
         #self.SetIcon(icon)
+
+        
 
         # Left panel with scrolling capability
         self.left_panel = wx.ScrolledWindow(self.panel, style=wx.VSCROLL)
@@ -42,7 +44,34 @@ class TaskApp(wx.Frame):
         self.task_list.SetForegroundColour((255,255,255))
         self.task_list.SetBackgroundColour((0, 0, 0))
         self.task_list.SetTextColour((255,255,255))
-        self.task_list.SetSize(round(self.GetSize().x / 2) - 10, self.GetSize().y)
+        self.task_list.SetSize(round(self.GetSize().x / 1.5) - 10, self.GetSize().y)
+        
+
+        # Loading save files
+        if os.path.isfile('points.pkl') is False:
+            with open('points.pkl' ,'x'):
+                return
+        with open('points.pkl', 'rb') as f:
+            self.total_points = pickle.load(f)
+            print(self.total_points)
+
+        if os.path.isfile('tasklist.pkl') is False:
+            with open('tasklist.pkl' ,'x'):
+                return
+
+        with open('tasklist.pkl', 'rb') as f:
+            try:
+                lUploadedTaskList = pickle.load(f)
+                task_dict = lUploadedTaskList
+                print(len(task_dict))
+                print(task_dict)
+                for index, (task_name, points) in enumerate(task_dict.items()):
+                    index = self.task_list.InsertItem(self.task_list.GetItemCount(), task_name)
+                    self.task_list.SetItem(index, 1, str(points))
+                    
+                print(self.task_list)
+            except:
+                print("can't")
 
         # Right panel with input fields and buttons
         self.right_panel = wx.Panel(self.panel)
@@ -71,6 +100,7 @@ class TaskApp(wx.Frame):
         right_sizer.Add(self.reset_points_btn, 0, wx.ALL, 5)
 
         # Put reset_points_btn to the bottom right
+        
 
 
         self.right_panel.SetSizer(right_sizer)
@@ -88,8 +118,16 @@ class TaskApp(wx.Frame):
         self.right_panel.SetBackgroundColour((0,0,0))
         self.right_panel.SetForegroundColour((255,255,255))
 
+        
+
         self.panel.SetSizer(main_sizer)
         self.Show()
+
+
+    def get_data(self, event):
+        with open('tasklist.pkl', "wb") as f:
+
+            pickle.dump(lTaskList, f)
 
     def reset_points(self, event):
         self.reset_points_prompt = wx.MessageBox("Are you sure you want to reset your points?", "Reset Points", wx.OK | wx.ICON_INFORMATION | wx.CANCEL)
@@ -99,11 +137,15 @@ class TaskApp(wx.Frame):
             self.task_list.DeleteAllItems()
             with open('points.pkl', 'wb') as f:
                 pickle.dump(self.total_points, f)
+            open('tasklist.pkl', 'wb').close()
     
     def submit_task(self, event):
         task = self.task_entry.GetValue()
         if task is None or task == "":
-            wx.MessageBox("Hi! Our little robots have scanned your text for innapropriate information! But.. They came across something empty and sent it away! You can't do nothing, always have to do something!", "Please enter a task.", wx.OK | wx.WXK_CONTROL_A)
+            wx.MessageBox("Uhh.. Bro?", "Please enter a task.", wx.OK | wx.WXK_CONTROL_A)
+            return
+        if task in curses:
+            wx.MessageBox(f"'{task}' is crazy.")
             return
 
         prompt = self.starter_prompt + task
@@ -121,6 +163,8 @@ class TaskApp(wx.Frame):
             # Add task to the list
             index = self.task_list.InsertItem(self.task_list.GetItemCount(), task)
             self.task_list.SetItem(index, 1, str(points))
+            lTaskList[task] = points
+            self.get_data(event)
             self.task_entry.SetValue("")
         except ValueError:
             wx.MessageBox("AI Error", "AI made an invalid input.", wx.OK | wx.ICON_ERROR)
