@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.5">
+    <title>Milestonify</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@600&display=swap');
+
+        * {
+            font-family: 'Comic Neue', cursive;
+        }
+        body {
+            background-color: rgb(25, 25, 25);
+            color: white;
+        }
+        button {
+            font-size: 2vw; /* Adjust the font size based on viewport width */
+            background-color: transparent;
+            color: white;
+            border-radius: 10px;
+            border: 2px solid white;
+        }
+        input {
+            background: transparent;
+            color: white;
+            size: 30;
+            text-size: 40px;
+            height:30px;
+        }
+        h1 {
+            margin: auto;
+            width: 50%;
+        }/**/
+    </style>
+</head>
+<body>
+    <h1>Milestonify</h1>
+    
+    <form action="#" method="post">
+        
+        <input type="text" name="task-input" id="task-input" size="30">
+        <input type="submit" value="Submit" name="submit" size="50">
+        <input type="submit" value="Reset Data" name="reset">
+        
+    </form>
+    <h2>Points: {{total_points}}</h2>
+
+    <ul>
+        {%for task in task_list%}
+            <li>{{task}}</li>
+        {%endfor%}
+    </ul>
+</body>
+</html>
